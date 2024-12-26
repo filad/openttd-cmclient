@@ -172,9 +172,6 @@ jobs:
         echo "::group::Run CPack"
         cpack
         echo "::endgroup::"
-
-        echo "::group::Rename bundles to citymania-client-*"
-        mv bundles/*.zip $(ls bundles/*.zip | sed 's/openttd/citymania-client/')
         
         echo "::group::Move PDB and exe to symbols"
         PDB_FOLDER=$(find symbols -mindepth 2 -type d)
