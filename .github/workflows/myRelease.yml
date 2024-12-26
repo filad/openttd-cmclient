@@ -21,17 +21,6 @@ jobs:
     uses: ./.github/workflows/release-source.yml
     secrets: inherit
 
-  docs:
-    name: Docs
-    needs: source
-    if: ${{ false }}  # CM
-
-    uses: ./.github/workflows/release-docs.yml
-    secrets: inherit
-
-    with:
-      version: ${{ needs.source.outputs.version }}
-
   macos:
     name: MacOS
     needs: source
@@ -57,7 +46,6 @@ jobs:
     name: Upload
     needs:
     - source
-    - docs
     - macos
     - windows
 
