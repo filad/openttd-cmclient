@@ -1,4 +1,4 @@
-name: MyRelease
+name: myRelease
 
 on:
   workflow_dispatch:
@@ -60,11 +60,6 @@ jobs:
     - docs
     - macos
     - windows
-
-    if: ${{ false }}  # CM
-    # As windows-store is condition, we need to check ourselves if we need to run.
-    # The always() makes sure the rest is always evaluated.
-    # if: always() && needs.source.result == 'success' && needs.docs.result == 'success' && needs.linux.result == 'success' && needs.macos.result == 'success' && needs.windows.result == 'success' && (needs.windows-store.result == 'success' || needs.windows-store.result == 'skipped')
 
     runs-on: ubuntu-latest
 
