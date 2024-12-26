@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Ref to build (for Pull Requests, use refs/pull/NNN/head)'
+        required: true
+  repository_dispatch:
+    # client_payload should be the same as the inputs for workflow_dispatch.
+    types:
+    - Build*
+  release:
+    types:
+    - published
+
+jobs:
+  source:
+    name: Source
+
+    uses: ./.github/workflows/release-source.yml
+    secrets: inherit
+
+  docs:
+    name: Docs
+    needs: source
+    if: ${{ false }}  # CM
+
+    uses: ./.github/workflows/release-docs.yml
+    secrets: inherit
+
+    with:
+      version: ${{ needs.source.outputs.version }}
+
+  macos:
+    name: MacOS
+    needs: source
+
+    uses: ./.github/workflows/release-macos.yml
+    secrets: inherit
+
+    with:
+      survey_key: ${{ needs.source.outputs.survey_key }}
+
+  windows:
+    name: Windows
+    needs: source
+
+    uses: ./.github/workflows/release-windows.yml
+    secrets: inherit
+
+    with:
+      is_tag: ${{ needs.source.outputs.is_tag }}
+      survey_key: ${{ needs.source.outputs.survey_key }}
+
+  upload:
+    name: Upload
+    needs:
+    - source
+    - docs
+    - macos
+    - windows
+
+    if: ${{ false }}  # CM
+    # As windows-store is condition, we need to check ourselves if we need to run.
+    # The always() makes sure the rest is always evaluated.
+    # if: always() && needs.source.result == 'success' && needs.docs.result == 'success' && needs.linux.result == 'success' && needs.macos.result == 'success' && needs.windows.result == 'success' && (needs.windows-store.result == 'success' || needs.windows-store.result == 'skipped')
+
+    runs-on: ubuntu-latest
+
+    # This job is empty, but ensures no upload job starts before all targets finished and are successful.
+    steps:
+    - name: Build completed
+      run: |
+        true
+
+  upload-to-github:
+    name: Release GitHub assets
+    needs:
+    - source
+    - macos
+    - windows
+
+    if: needs.source.outputs.trigger_type == 'new-master' || needs.source.outputs.trigger_type == 'new-tag'
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Download all bundles
+      uses: actions/download-artifact@v4
+
+    - name: Release GitHub assets
+      uses: softprops/action-gh-release@v0.1.15
+
+      # if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          citymania-client-*/*.zip
+          citymania-client-*/*.xz
+          citymania-client-*/*.dmg
