@@ -64,7 +64,7 @@ jobs:
     - macos
     - windows
 
-    # if: needs.source.outputs.trigger_type == 'new-master' || needs.source.outputs.trigger_type == 'new-tag'
+    if: needs.source.outputs.trigger_type == 'new-master' || needs.source.outputs.trigger_type == 'new-tag'
 
     runs-on: ubuntu-20.04
 
